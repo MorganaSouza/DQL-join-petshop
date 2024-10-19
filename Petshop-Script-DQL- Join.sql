@@ -14,19 +14,17 @@
 				order by dataAdm desc;
                 
          -- Relatório 1       
-create view Relatorio1 as
-select upper(emp.nome) as "Empregado",
-    emp.cpf as "CPF",
-    date_format(emp.dataAdm, '%d/%m/%Y') as "Data de Admissão",
-    concat('R$ ', format(emp.salario, 2, 'de_DE')) as "Salário",
-    dep.nome as "Departamento",
-    tel.numero as "Número de Telefone"
-	from empregado emp
-		inner join departamento dep on dep.idDepartamento = emp.Departamento_idDepartamento
-		left join telefone tel on tel.empregado_cpf = emp.cpf
-		where emp.dataAdm between '2019-01-01' and '2022-03-31'
-			order by emp.dataAdm desc;
-            
+select emp.nome as "Nome", emp.cpf "CPF" , 
+	date_format(emp.dataAdm, '%d/%m/%Y') "Data de Admissão",
+	concat('R$ ', format(emp.salario, 2, 'de_DE')) "Salário", 
+	dep.nome "Departamento",
+    	coalesce(tel.numero, 'não informado') "Telefone"
+    	from empregado emp
+		left join departamento dep on dep.idDepartamento = emp.Departamento_idDepartamento
+        	left join telefone tel on Empregado_cpf = emp.cpf
+			where dataAdm between "2019-01-01" and "2022-03-31"
+            			order by dataAdm desc;
+
             select * from relatorio1;
             
 		-- um ano a menos para aparecer a tabela --  
@@ -34,8 +32,8 @@ select upper(emp.nome) as "Empregado",
 select upper(emp.nome) as "Empregado", emp.cpf "CPF" ,
 	date_format(emp.dataAdm, '%d/%m/%Y') "Data de Admissão",
 	concat('R$ ', format(emp.salario, 2, 'de_DE')) "Salário", 		
-    dep.nome as "Departamento",
-    tel.numero as "Número de Telefone"
+   	dep.nome as "Departamento",
+    	tel.numero as "Número de Telefone"
 		from empregado emp
 			left join departamento dep on dep.idDepartamento = emp.Departamento_idDepartamento
 			left join telefone tel on Empregado_cpf = emp.cpf
@@ -44,18 +42,16 @@ select upper(emp.nome) as "Empregado", emp.cpf "CPF" ,
             
 
           -- Relatório 2
-create view Relatorio2 as
-select upper(emp.nome) as "Empregado",
-    emp.cpf as "CPF",
-    date_format(emp.dataAdm, '%d/%m/%Y') as "Data de Admissão",
-    concat('R$ ', format(emp.salario, 2, 'de_DE')) as "Salário",
-    dep.nome as "Departamento",
-    tel.numero as "Número de Telefone"
-	from empregado emp
-		inner join departamento dep on dep.idDepartamento = emp.Departamento_idDepartamento
-		left join telefone tel on tel.empregado_cpf = emp.cpf
-		where emp.salario < (select avg(salario) from petshop.Empregado)
-			order by emp.nome;
+select emp.nome as "Nome", emp.cpf "CPF" ,
+	date_format(emp.dataAdm, '%d/%m/%Y') "Data de Admissão",
+	concat('R$ ', format(emp.salario, 2, 'de_DE')) "Salário", 
+	dep.nome "Departamento",
+    	coalesce(tel.numero, 'não informado') "Telefone"
+    	from empregado emp
+		left join departamento dep on dep.idDepartamento = emp.Departamento_idDepartamento
+        	left join telefone tel on Empregado_cpf = emp.cpf
+			where salario < (select avg(salario) from empregado)
+           			 order by nome;
             
             select * from relatorio2;
             
@@ -63,26 +59,27 @@ select upper(emp.nome) as "Empregado",
 select concat('R$ ', format(avg(salario), 2, 'de_DE')) "Média Salarial" from empregado;
 
 -- Relatório 3
-create view Relatorio3 as
-select upper(dep.nome) as "Nome Departamento", count(emp.Departamento_idDepartamento) "Quantidade de Empregados",
-	concat('R$ ', format(avg(emp.salario), 2, 'de_DE')) "Média salarial", 
+select dep.nome as "Nome Departamento", 
+	count(emp.Departamento_idDepartamento) "Quantidade de Empregados",
+ 	concat('R$ ', format(avg(emp.salario), 2, 'de_DE')) "Média salarial", 
 	concat('R$ ', format(avg(emp.comissao), 2, 'de_DE')) "Média da Comissão"
 	from departamento dep
 		inner join empregado emp ON dep.idDepartamento = emp.Departamento_idDepartamento
-        group by dep.nome
-			order by dep.nome;
-            
+        		group by dep.nome
+			    order by dep.nome;
             select * from relatorio3;
 
 -- Relatório 4
 create view Relatorio4 as
-select upper(emp.nome) "Nome", emp.cpf "CPF", emp.sexo "Gênero", count(ven.Empregado_cpf) "quantidade de vendas" ,
+select upper(emp.nome) "Nome", emp.cpf "CPF", 
+	emp.sexo "Gênero", 
+	count(ven.Empregado_cpf) "quantidade de vendas" ,
 	concat('R$ ', format(sum(ven.valor), 2, 'de_DE')) "Total Valor Vendido", 
 	concat('R$ ', format(sum(ven.comissao), 2, 'de_DE')) "Total Comissão das Vendas"
 	from empregado emp
 		join venda ven on emp.cpf = ven.Empregado_cpf and ven.comissao and ven.valor
-        group by emp.cpf
-			order by count(ven.Empregado_cpf) desc; 
+        		group by emp.cpf
+				order by count(ven.Empregado_cpf) desc; 
     
 select count(idVenda) from venda; -- só para contar mesmo --
 
@@ -90,16 +87,17 @@ select * from relatorio4;
 
 -- Relatório 5
 create view Relatorio5 as
-select upper(emp.nome) as "Nome", emp.cpf "CPF" , emp.sexo "Gênero",
+select upper(emp.nome) as "Nome", emp.cpf "CPF" ,
+	emp.sexo "Gênero",
 	concat('R$ ', format(emp.salario, 2, 'de_DE')) "Salário",
-    count(its.quantidade)"Quantidade Vendas com Serviço",
-    concat('R$ ', format(sum(its.valor), 2, 'de_DE'))"Total Valor Vendido com Serviço",
-    coalesce(concat('R$ ', format(sum(ven.comissao), 2, 'de_DE')), "Sem comissão com serviços" ) "Total Comissão das Vendas com Serviço"
-    from empregado emp
+    	count(its.quantidade)"Quantidade Vendas com Serviço",
+    	concat('R$ ', format(sum(its.valor), 2, 'de_DE'))"Total Valor Vendido com Serviço",
+    	coalesce(concat('R$ ', format(sum(ven.comissao), 2, 'de_DE')), "Sem comissão com serviços" ) "Total Comissão das Vendas com Serviço"
+    	from empregado emp
 		inner join itensservico its on emp.cpf = its.Empregado_cpf
-        left join venda ven on emp.cpf = ven.Empregado_cpf
-        group by emp.cpf
-			order by count(its.valor) desc;
+        	left join venda ven on emp.cpf = ven.Empregado_cpf
+        		group by emp.cpf
+				order by count(its.valor) desc;
             
             select * from relatorio5;
 
@@ -128,8 +126,8 @@ select date_format(ven.data, '%d/%m/%Y') "Data da Venda",
 		from venda ven
 			join empregado emp on emp.cpf = ven.Empregado_cpf
 			join cliente cli on cli.cpf = ven.Cliente_cpf
-			where cli.cpf = "001.172.372-64"
-				order by ven.data desc;
+				where cli.cpf = "001.172.372-64"
+					order by ven.data desc;
                 
                 select * from relatorio7;
 
@@ -140,16 +138,17 @@ select ser.nome "Nome do Serviço",
 	 concat('R$ ', format(sum(its.valor), 2, 'de_DE')) "Total Valor Vendido"
 	 from servico ser
 		inner join itensservico its on Servico_idServico = ser.idServico
-        group by ser.nome
-			order by sum(its.quantidade) desc
-			limit 10;
+       			 group by ser.nome
+				order by sum(its.quantidade) desc
+				limit 10;
             
             select * from relatorio8;
             
 -- Relatório 9
 create view Relatorio9 as
 select tipo "Tipo Forma Pagamento", 
-    count(tipo)"Quantidade Vendas", concat('R$ ', format(sum(valorPago), 2, 'de_DE')) "Total Valor Vendido"
+    	count(tipo)"Quantidade Vendas", 
+	concat('R$ ', format(sum(valorPago), 2, 'de_DE')) "Total Valor Vendido"
 	from formapgvenda 
 		group by tipo
 			order by count(tipo) desc; 
@@ -173,8 +172,9 @@ select date_format(ven.data, '%d/%m/%Y') as "Data Venda",
                 
 -- Relatório 11
 create view Relatorio11 as
-select pro.nome "Nome Produto", concat('R$ ', format(sum(pro.valorVenda), 2, 'de_DE')) "Valor Produto", pro.marca "Categoria do Produto",
-coalesce(max(frn.nome), 'sem registro') "Nome Fornecedor", coalesce(max(frn.email), 'sem registro') "Email Fornecedor", coalesce(max(tel.numero), 'sem registro') "Telefone Fornecedor"
+select pro.nome "Nome Produto", 
+	concat('R$ ', format(sum(pro.valorVenda), 2, 'de_DE')) "Valor Produto", pro.marca "Categoria do Produto",
+	coalesce(max(frn.nome), 'sem registro') "Nome Fornecedor", coalesce(max(frn.email), 'sem registro') "Email Fornecedor", coalesce(max(tel.numero), 'sem registro') "Telefone Fornecedor"
 		from produtos pro
 			left join itenscompra itc on itc.Produtos_idProduto = pro.idProduto
 			left join compras com on com.idCompra = itc.Compras_idCompra
